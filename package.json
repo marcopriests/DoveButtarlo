@@ -8,11 +8,19 @@
   },
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@google/genai": "^1.29.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcopriests/DoveButtarlo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/marcopriests/DoveButtarlo/issues"
+  },
+  "homepage": "https://github.com/marcopriests/DoveButtarlo#readme",
+  "description": ""
 }

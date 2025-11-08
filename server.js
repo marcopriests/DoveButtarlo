@@ -22,30 +22,39 @@ app.post("/api/dovebuttarlo", async (req, res) => {
 
     try {
         const prompt = `
-        Sei un assistente ambientale esperto nella raccolta differenziata in Italia.
-        L’utente vive a ${comune} e vuole sapere dove buttare ${oggetto}.
-        - Cerca esclusivamente sul sito ufficiale o sulla pagina web dedicata alla raccolta differenziata del comune indicato.
-        - Determina in modo certo in quale categoria di rifiuto rientra l’oggetto.
-        - Le uniche categorie permesse sono UMIDO, CARTA, PLASTICA, VETRO, INDIFFERENZIATA, RAEE, CENTRO DI RACCOLTA.
-        - Rispondi solo ed esclusivamente nel seguente formato:
-            "{risposta: [CATEGORIA], fonte: [link fonte]}"
+            Sei un assistente ambientale esperto nelle regole della raccolta differenziata in Italia.
 
-        ⚠️ Regole obbligatorie:
+            L'utente vuole sapere dove buttare ${oggetto} seguendo correttamente le regole della differenziata relative al ${comune}.
 
-        Non fornire spiegazioni o testo aggiuntivo.
-        Se il ${comune} non esiste o non è riconosciuto come comune italiano, rispondi nel seguente modo e formato:
-            "{risposta: COMUNE NON TROVATO O ERRATO, fonte: ""}"
+            Il tuo compito è:
+            1. Cercare esclusivamente informazioni aggiornate sul sito ufficiale o sulla pagina dedicata alla raccolta differenziata del comune indicato (es. portale comunale o azienda locale di igiene urbana).
+            2. Identificare il corretto contenitore in cui smaltire l'oggetto e scegliere una sola CATEGORIA tra le seguenti:
+            ["CARTA", "PLASTICA", "VETRO", "ORGANICO", "INDIFFERENZIATO", "RAEE", "CENTRO DI RACCOLTA"]
+            3. Rispondi con [CATEGORIA], [link fonte].
 
-        Se il sito comunale non specifica chiaramente la categoria, rispondi nel seguente modo e formato:
-            "{risposta: NON SPECIFICATO DAL COMUNE, fonte: ""}"
+            Regole aggiuntive:
+            1. Se ${oggetto} deve essere conferito in un centro di raccolta specifico, rispondi solo con "CENTRO DI RACCOLTA".
+            2. Se il ${comune} non esiste o non è trovato, rispondi con [COMUNE NON TROVATO].
+            3. Se il ${comune} non ha un sito dedicato alla raccolta rifiuti oppure non hai certezza di cosa sia ${oggetto} e quindi di come vada smaltito, rispondi con "INFORMAZIONE NON TROVATA".
+            4. Prima di inviare il link della fonte assicurati che esso sia effettivamente esistente e che non porti ad un errore 404 not found.
         `;
 
         const response = await ai.models.generateContent({ model: "gemini-2.5-flash", contents: prompt });
 
         // Estraggo il testo della risposta (che Gemini restituisce come stringa)
         const text = response.text;
-        console.log(text);
-        const result = JSON.parse(text);
+
+        const arrayRisposta = text.split(",").map(item => item.trim());
+
+        const result = {
+            categoria: arrayRisposta[0] || "",
+            fonte: arrayRisposta[1] || ""
+        };
+        console.log(result);
+
+        if (typeof result !== "object") {
+            throw new Error("Risposta non valida dal modello AI");
+        }
 
         res.json(result);
 
